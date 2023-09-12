@@ -15,25 +15,11 @@ app.use(express.json());
 
 const userServices = require("./services/userServices");
 
-// const AppDataSource = new DataSource({
-//   type: process.env.TYPEORM_CONNECTION,
-//   host: process.env.TYPEORM_HOST,
-//   port: process.env.TYPEORM_PORT,
-//   username: process.env.TYPEORM_USERNAME,
-//   password: process.env.TYPEORM_PASSWORD,
-//   database: process.env.TYPEORM_DATABASE,
-// });
-
 // 실행
 app.get("/", userServices.welcome); // 메인홈
 app.get("/users", userServices.getUsers); // 유저데이터 화면
 app.post("/users", userServices.createUsers); // 회원가입
 app.post("/login", userServices.login); //  로그인 - ing
-
-// const test = AppDataSource.initialize()
-//     .then(() => {
-//         console.log("Data Source has been initialized!")
-//     })
 
 const server = http.createServer(app);
 
