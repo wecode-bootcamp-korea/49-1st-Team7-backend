@@ -3,15 +3,26 @@
 ## Directory tree
 
 ```bash
-├── app.js
+── app.js
+├── controllers
+│   └── index.js
+├── db
+│   ├── migrations
+│   └── schema.sql
+├── middlewares
+│   └── index.js
 ├── models
-│ └── index.js
+│   └── index.js
 ├── package-lock.json
 ├── package.json
 ├── pull_request_template.md
 ├── readme.md
+├── routes
+│   └── index.js
+├── services
+│   └── index.js
 └── utils
-└── throwError.js
+    └── throwError.js
 ```
 
 ## Error handler
@@ -21,7 +32,7 @@
 app.use((err, _, res, next) => {
   res.status(err.status || 500);
   return res.json({
-    error: `${err.status ? err.status : ''} ${err.message}`,
+    error: `${err.status ? err.status : ""} ${err.message}`,
   });
 });
 ```
@@ -31,16 +42,16 @@ app.use((err, _, res, next) => {
     예시
 
 ```js
-app.delete('/posts', async (req, res, next) => {
+app.delete("/posts", async (req, res, next) => {
   try {
     const { post_id } = req.body;
     const { id } = req.query;
     if (id) {
       await dataSource.query(
         `DELETE FROM posts WHERE posts.id=? AND posts.user_id=?`,
-        [post_id, id],
+        [post_id, id]
       );
-      return res.status(200).json({ message: 'post deleted' });
+      return res.status(200).json({ message: "post deleted" });
     }
     throwError(401);
   } catch (err) {
