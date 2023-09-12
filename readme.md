@@ -1,17 +1,18 @@
-# Team 2
+# Team 7
 
 ## Directory tree
 
 ```bash
-├── app.js
-├── models
-│ └── index.js
+── app.js
+├── db
+│   ├── migrations
+│   └── schema.sql
 ├── package-lock.json
 ├── package.json
 ├── pull_request_template.md
 ├── readme.md
-└── utils
-└── throwError.js
+├── services
+│   └── userServices.js
 ```
 
 ## Error handler
