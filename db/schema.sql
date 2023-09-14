@@ -49,7 +49,6 @@ CREATE TABLE `post` (
   `postId` int NOT NULL AUTO_INCREMENT,
   `nickname` varchar(50) NOT NULL,
   `content` varchar(3000) NOT NULL,
-  `profileImage` varchar(1000) NOT NULL,
   `created_At` varchar(45) NOT NULL DEFAULT 'CURRENT_TIMESTAMP',
   `update_At` varchar(45) DEFAULT 'CURRENT_TIMESTAMP',
   `isMyPost` tinyint DEFAULT NULL,
@@ -101,7 +100,8 @@ CREATE TABLE `user` (
   `created_at` varchar(45) NOT NULL DEFAULT 'DEFAULT CURRENT_TIMESTAMP',
   `updated_at` varchar(45) DEFAULT 'ON UPDATED CURRENT_TIMESTAMP',
   `phoneNumber` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -130,5 +130,7 @@ INSERT INTO `schema_migrations` (version) VALUES
   ('20230912044338'),
   ('20230912044437'),
   ('20230912044448'),
-  ('20230912044456');
+  ('20230912044456'),
+  ('20230913064852'),
+  ('20230913065136');
 UNLOCK TABLES;

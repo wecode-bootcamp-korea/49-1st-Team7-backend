@@ -1,24 +1,17 @@
-const dotenv = require("dotenv");
+const dotenv = require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const { DataSource } = require("typeorm");
+const { errorHandler } = require("../errorHandler.js");
 
-// const myDataSource = new DataSource({
-//   type: process.env.TYPEORM_CONNECTION,
-//   host: process.env.TYPEORM_HOST,
-//   port: process.env.TYPEORM_PORT,
-//   username: process.env.TYPEORM_USERNAME,
-//   password: process.env.TYPEORM_PASSWORD,
-//   database: process.env.TYPEORM_DATABASE,
-// });
-
-const myDataSource = new DataSource({
-  type: "mysql",
-  host: "localhost",
-  port: "3306",
-  username: "root",
-  password: "pw",
-  database: "minitest",
+const AppDataSource = new DataSource({
+  type: process.env.TYPEORM_CONNECTION,
+  host: process.env.TYPEORM_HOST,
+  port: process.env.TYPEORM_PORT,
+  username: process.env.TYPEORM_USERNAME,
+  password: process.env.TYPEORM_PASSWORD,
+  database: process.env.TYPEORM_DATABASE,
 });
 
 // API
@@ -35,8 +28,8 @@ const welcome = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const userData = await myDataSource.query(`
-        SELECT id, email, password FROM users`);
+    const userData = await AppDataSource.query(`
+    SELECT id, nickname, email, password FROM user`);
 
     return res.status(200).json({
       users: userData,
@@ -48,52 +41,59 @@ const getUsers = async (req, res) => {
 
 const createUsers = async (req, res) => {
   try {
-    const { body } = req;
-    const { name, email, password } = body;
+    const { nickname, email, password } = req.body;
+    // 에러핸들링  :  키 미입력  /  비번 10자 미만  /  이메일 @, . 미포함  /  특수문자  /  이메일, 닉네임 중복
+    errorHandler(!nickname || !email || !password, "input check plz", 400);
 
-    if (name === undefined || email === undefined || password === undefined) {
-      const error = new Error("input error");
-      error.statusCode = 400;
-      throw error;
-    }
+    // if (!nickname || !email || !password) {
+    //   const error = new Error("input check plz");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
 
-    if (password.length < 8) {
-      const error = new Error("input password is too short");
-      error.statusCode = 400;
-      throw error;
-    }
+    errorHandler(password.length < 10, "password check plz", 400);
 
-    if (!email.includes("@") && !email.includes(".")) {
-      const error = new Error("@ or . is not input in email");
-      error.statusCode = 400;
-      throw error;
-    }
+    // if (password.length < 10) {
+    //   const error = new Error("password check plz");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
 
-    const emailCheck = await myDataSource.query(`
-          SELECT name, email, password FROM users WHERE email="${email}"
-          `);
+    errorHandler(!email.includes("@" && "."), "email check plz", 400);
 
-    //이메일중복  /  ID중복
-    if (emailCheck.length > 0) {
-      const error = new Error("already exist email");
-      error.statusCode = 400;
-      throw error;
-    }
+    // if (!email.includes("@" && ".")) {
+    //   const error = new Error("email check plz");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
 
-    const userData = await myDataSource.query(`
-      INSERT INTO users(name, email, password)
-      VALUES("${name}", "${email}", "${password}")
-      `);
+    const duplicateCheck = await AppDataSource.query(`
+    SELECT nickname, email FROM user WHERE (nickname="${nickname}") OR (email="${email}")
+    `);
 
-    console.log("create new user data : ", userData);
+    errorHandler(
+      duplicateCheck.length > 0,
+      "already exist. input another key plz",
+      400
+    );
+
+    // 비밀번호 특수문자 에러핸들링 필요
+
+    const hashedPassword = await bcrypt.hash(password, 10); // bcrypt 생성
+
+    const userData = await AppDataSource.query(`
+    INSERT INTO user(nickname, email, password)
+    VALUES("${nickname}", "${email}", "${hashedPassword}")
+    `);
 
     return res.status(201).json({
-      message: "user create complete!",
+      message: `${nickname}(${email}) user create complete`,
+      data: userData,
     });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
-      message: "error! check your input, plz",
+      message: "error! check your input key, plz",
     });
   }
 };
@@ -102,25 +102,52 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (password.length < 8) {
-      const error = new Error("input password is too short");
-      error.statusCode = 400;
-      throw error;
-    }
+    errorHandler(
+      password.length < 8,
+      "input password is too short, plz check",
+      400
+    );
 
-    const userCheck = await myDataSource.query(`
-      SELECT * FROM users WHERE email = "${email}" AND password = "${password}"
+    // if (password.length < 8) {
+    //   const error = new Error("input password is too short, plz check");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
+
+    const userEmailCheck = await AppDataSource.query(`
+      SELECT * FROM user WHERE email = "${email}"
       `);
 
-    console.log(userCheck);
+    errorHandler(
+      userEmailCheck.length === 0,
+      "check your EMAIL or PW plz",
+      400
+    );
 
-    if (userCheck.length === 0) {
-      const error = new Error("check your EMAIL or PW plz");
-      error.statusCode = 400;
-      throw error;
-    }
+    console.log("user check:::::", userEmailCheck);
 
-    const loginToken = jwt.sign({ id: userCheck[0].id }, "loginToken");
+    const passwordMatch = await bcrypt.compare(
+      password,
+      userEmailCheck[0].password
+    );
+
+    console.log("passwordMatch::::::::::::", passwordMatch);
+
+    errorHandler(!passwordMatch, "check your PW plz", 400);
+
+    // if (!passwordMatch) {
+    //   const error = new Error("check your PW plz");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
+
+    // if (userEmailCheck.length === 0) {
+    //   const error = new Error("check your EMAIL or PW plz");
+    //   error.statusCode = 400;
+    //   throw error;
+    // }
+
+    const loginToken = jwt.sign({ id: userEmailCheck[0].id }, "loginToken");
 
     return res.status(200).json({
       message: "login complete",
@@ -134,15 +161,13 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = {
-  welcome: welcome, //  키, 밸류값이 같으면 하나만 넣어도 된다.  =  welcome만
-  getUsers: getUsers,
-  createUsers: createUsers,
-  login: login,
-  myDataSource: myDataSource,
-};
+AppDataSource.initialize().then(() => {
+  console.log("Data Source has been initialized!");
+});
 
-// welcome
-// getUsers
-// createUsers
-// login
+module.exports = {
+  welcome, //  키, 밸류값이 같으면 하나만 넣어도 된다.  =  welcome만
+  getUsers,
+  createUsers,
+  login,
+};
