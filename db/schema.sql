@@ -20,7 +20,6 @@ CREATE TABLE `comment` (
   `nickname` varchar(50) NOT NULL,
   `comment` varchar(1000) NOT NULL,
   `isMyReply` tinyint NOT NULL,
-  `created_At` varchar(45) NOT NULL DEFAULT 'CURRENT_TIMESTAMP',
   PRIMARY KEY (`commentId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -49,9 +48,6 @@ CREATE TABLE `post` (
   `postId` int NOT NULL AUTO_INCREMENT,
   `nickname` varchar(50) NOT NULL,
   `content` varchar(3000) NOT NULL,
-  `profileImage` varchar(1000) NOT NULL,
-  `created_At` varchar(45) NOT NULL DEFAULT 'CURRENT_TIMESTAMP',
-  `update_At` varchar(45) DEFAULT 'CURRENT_TIMESTAMP',
   `isMyPost` tinyint DEFAULT NULL,
   `IsLiked` tinyint DEFAULT NULL,
   `likeCount` int DEFAULT NULL,
@@ -98,10 +94,9 @@ CREATE TABLE `user` (
   `password` varchar(200) NOT NULL,
   `profileImage` varchar(1000) DEFAULT NULL,
   `birthday` date DEFAULT NULL,
-  `created_at` varchar(45) NOT NULL DEFAULT 'DEFAULT CURRENT_TIMESTAMP',
-  `updated_at` varchar(45) DEFAULT 'ON UPDATED CURRENT_TIMESTAMP',
   `phoneNumber` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -126,9 +121,14 @@ CREATE TABLE `user` (
 
 LOCK TABLES `schema_migrations` WRITE;
 INSERT INTO `schema_migrations` (version) VALUES
+  ('20230912042042'),
   ('20230912044217'),
   ('20230912044338'),
   ('20230912044437'),
   ('20230912044448'),
-  ('20230912044456');
+  ('20230912044456'),
+  ('20230913062656'),
+  ('20230913073231'),
+  ('20230913074518'),
+  ('20230913112650');
 UNLOCK TABLES;

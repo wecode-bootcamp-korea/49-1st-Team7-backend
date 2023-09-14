@@ -13,13 +13,16 @@ app.use(cors());
 app.use(morgan("combined"));
 app.use(express.json());
 
-const userServices = require("./services/userServices");
+const userServices = require("./services/userServices.js");
 
 // 실행
 app.get("/", userServices.welcome); // 메인홈
 app.get("/users", userServices.getUsers); // 유저데이터 화면
 app.post("/users", userServices.createUsers); // 회원가입
 app.post("/login", userServices.login); //  로그인 - ing
+// app.post("/posts", userPost.postDashboard); // 게시물 올리기
+// app.get("/posts", userPost.getDashboard); // 게시물 보여주기
+// app.put("/change", userServices.change); // 유저 회원정보 변경
 
 const server = http.createServer(app);
 
@@ -34,9 +37,5 @@ const start = async () => {
     console.error(err);
   }
 };
-
-userServices.AppDataSource.initialize().then(() => {
-  console.log("Data Source has been initialized!");
-});
 
 start();
