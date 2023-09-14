@@ -12,6 +12,8 @@ const AppDataSource = new DataSource({
   username: process.env.TYPEORM_USERNAME,
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE,
+  serverport : process.env.TYPEORM_SERVERPORT,
+  token : process.env.TYPEORM_JWT,
 });
 
 // API
@@ -47,7 +49,7 @@ const createUsers = async (req, res) => {
     const salt = 12
 
     const makeHash = await bcrypt.hash(req.body.password, salt)
-    console.log(makeHash)
+    console.log("확인", makeHash)
 
 
     if (nickname === undefined || email === undefined || password === undefined) {
@@ -67,7 +69,7 @@ const createUsers = async (req, res) => {
       error.statusCode = 400;
       throw error;
     }
-
+    
     const emailCheck = await AppDataSource.query(`
           SELECT nickname, email, password FROM user WHERE email="${email}"
           `);
@@ -109,7 +111,7 @@ const login = async (req, res) => {
     }
 
     const userCheck = await AppDataSource.query(`
-      SELECT id, email, password FROM user WHERE email = "${email}"
+      SELECT id, email, password, nickname FROM user WHERE email = "${email}"
       `);
 
     
@@ -131,11 +133,10 @@ const login = async (req, res) => {
       throw error;
     }
 
-    const loginToken = jwt.sign({ id: userCheck[0].id }, "loginToken");
+    const loginToken = jwt.sign({ nickname: userCheck[0].nickname }, process.env.TYPEORM_JWT);
 
     return res.status(200).json({
       message: "login complete",
-      token: loginToken,
     });
   } catch (err) {
     console.log(err);
@@ -146,63 +147,73 @@ const login = async (req, res) => {
 };
 
 
-const addPost = async (req, res) => {
-  try {
-    const {nickname, content} = req.body
+// const addPost = async (req, res) => {
+//   try {
+//     const {content} = req.body
 
-    const postData = await AppDataSource.query(`
-    INSERT INTO post (
-      nickname,
-      content
-    ) VALUES (
-      '${nickname}',
-      '${content}'
-    )
-    `)
+//     const postToken = req.headers.authorization;
 
-    const checkName = await AppDataSource.query(`
-    SELECT nickname FROM user WHERE nickname = "${nickname}"
-    `);
+//     if(!postToken) {
+//       const error = new Error("TOKEN_ERROR")
+//       error.statusCode = 400
+//       error.code = "TOKEN_ERROR"
+//       throw error
+//     }
+  
+//     const {nickname} = jwt.verify(postToken, process.env.TYPEORM_JWT)
+    
+//     const postData = await AppDataSource.query(`
+//     INSERT INTO post (
+//       nickname,
+//       content
+//     ) VALUES (
+//       '${nickname}',
+//       '${content}'
+//     )
+//     `)
 
-    if(nickname != checkName[0].nickname){
-      const error = new Error("Check your NAME")
-      error.statusCode = 400;
-      throw error;
-    }
-    return res.status(201).json({
-      "message" : "add Post!"
-    })
-  } catch (error) {
-    console.log(error)
-  }
-}
+//     const checkName = await AppDataSource.query(`
+//     SELECT nickname FROM user WHERE nickname = "${nickname}"
+//     `);
 
-  const showPost = async(req, res) => {
-    try {
-      const postData = await AppDataSource.query(`
-      SELECT 
-      nickname,
-      content AS postContent, 
-      created_at,
-      updated_at
-      FROM post
-      ORDER BY postId DESC;
-      `)
-      return res.status(200).json({
-        "postData" : postData
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }
+
+//     if(nickname != checkName[0].nickname){
+//       const error = new Error("Check your NAME")
+//       error.statusCode = 400;
+//       throw error;
+//     }
+//     return res.status(201).json({
+//       "message" : "add Post!"
+//     })
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
+
+//   const showPost = async(req, res) => {
+//     try {
+//       const postData = await AppDataSource.query(`
+//       SELECT 
+//       nickname,
+//       content AS postContent, 
+//       created_at,
+//       updated_at
+//       FROM post
+//       ORDER BY postId DESC;
+//       `)
+//       return res.status(200).json({
+//         "postData" : postData
+//       })
+//     } catch (error) {
+//       console.log(error)
+//     }
+//   }
 
 module.exports = {
   welcome: welcome, //  키, 밸류값이 같으면 하나만 넣어도 된다.  =  welcome만
   getUsers: getUsers,
   createUsers: createUsers,
   login: login,
-  addPost,
-  showPost,
   AppDataSource: AppDataSource
 };
 
