@@ -1,4 +1,4 @@
-# Team 2
+# Team 7
 
 ## Directory tree
 
@@ -21,7 +21,7 @@
 app.use((err, _, res, next) => {
   res.status(err.status || 500);
   return res.json({
-    error: `${err.status ? err.status : ''} ${err.message}`,
+    error: `${err.status ? err.status : ""} ${err.message}`,
   });
 });
 ```
@@ -31,16 +31,16 @@ app.use((err, _, res, next) => {
     예시
 
 ```js
-app.delete('/posts', async (req, res, next) => {
+app.delete("/posts", async (req, res, next) => {
   try {
     const { post_id } = req.body;
     const { id } = req.query;
     if (id) {
       await dataSource.query(
         `DELETE FROM posts WHERE posts.id=? AND posts.user_id=?`,
-        [post_id, id],
+        [post_id, id]
       );
-      return res.status(200).json({ message: 'post deleted' });
+      return res.status(200).json({ message: "post deleted" });
     }
     throwError(401);
   } catch (err) {
