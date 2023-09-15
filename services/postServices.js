@@ -1,8 +1,10 @@
+
 const dotenv = require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const { DataSource } = require("typeorm");
 const { errorHandler } = require("../errorHandler.js");
+
 
 const AppDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
@@ -11,6 +13,7 @@ const AppDataSource = new DataSource({
   username: process.env.TYPEORM_USERNAME,
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE,
+
 });
 
 // API
@@ -85,3 +88,4 @@ module.exports = {
   createPosts,
   getPost,
 };
+

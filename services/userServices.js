@@ -1,9 +1,11 @@
 const dotenv = require("dotenv").config();
 const jwt = require("jsonwebtoken");
+
 const bcrypt = require("bcrypt");
 
 const { DataSource } = require("typeorm");
 const { errorHandler } = require("../errorHandler.js");
+
 
 const AppDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
@@ -12,6 +14,8 @@ const AppDataSource = new DataSource({
   username: process.env.TYPEORM_USERNAME,
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE,
+
+
 });
 
 // API
@@ -29,18 +33,22 @@ const welcome = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const userData = await AppDataSource.query(`
+
     SELECT id, nickname, email, password FROM user`);
 
+
     return res.status(200).json({
-      users: userData,
+      users: userData
     });
   } catch (err) {
     console.log(err);
   }
 };
 
+
 const createUsers = async (req, res) => {
   try {
+
     const { nickname, email, password } = req.body;
     // 에러핸들링  :  키 미입력  /  비번 10자 미만  /  이메일 @, . 미포함  /  특수문자  /  이메일, 닉네임 중복
     errorHandler(!nickname || !email || !password, "input check plz", 400);
@@ -88,6 +96,7 @@ const createUsers = async (req, res) => {
 
     console.log("user data:", userData[0]);
 
+  
     return res.status(201).json({
       message: `${nickname}(${email}) user create complete`,
       data: userData[0],
@@ -100,57 +109,12 @@ const createUsers = async (req, res) => {
   }
 };
 
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    errorHandler(
-      password.length < 8,
-      "input password is too short, plz check",
-      400
-    );
 
-    // if (password.length < 8) {
-    //   const error = new Error("input password is too short, plz check");
-    //   error.statusCode = 400;
-    //   throw error;
-    // }
-
-    const userEmailCheck = await AppDataSource.query(`
-      SELECT * FROM user WHERE email = "${email}"
-      `);
-
-    errorHandler(userEmailCheck.length === 0, "not exist user(email)", 400);
-
-    console.log("user check:::::", userEmailCheck);
-
-    const passwordMatch = await bcrypt.compare(
-      password,
-      userEmailCheck[0].password
-    );
-
-    console.log("passwordMatch::::::::::::", passwordMatch);
-
-    errorHandler(!passwordMatch, "check your PW plz", 400);
-
-    // if (!passwordMatch) {
-    //   const error = new Error("check your PW plz");
-    //   error.statusCode = 400;
-    //   throw error;
-    // }
-
-    // if (userEmailCheck.length === 0) {
-    //   const error = new Error("check your EMAIL or PW plz");
-    //   error.statusCode = 400;
-    //   throw error;
-    // }
-
-    const loginToken = jwt.sign({ id: userEmailCheck[0].id }, "loginToken");
-
-    return res.status(200).json({
-      message: "login complete",
-      token: loginToken,
-      nickname: userEmailCheck[0].nickname,
     });
   } catch (err) {
     console.log(err);
@@ -169,4 +133,5 @@ module.exports = {
   getUsers,
   createUsers,
   login,
+
 };

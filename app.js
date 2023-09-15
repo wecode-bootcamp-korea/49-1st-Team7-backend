@@ -1,6 +1,8 @@
 const http = require("http");
 const express = require("express");
 const cors = require("cors");
+
+
 const dotenv = require("dotenv").config();
 const morgan = require("morgan");
 
@@ -31,27 +33,37 @@ const { errorHandler } = require("./errorHandler.js");
 app.get("/", userServices.welcome); // 메인홈
 app.get("/users", userServices.getUsers); // 유저데이터 화면
 app.post("/users", userServices.createUsers); // 회원가입
+
 app.post("/login", userServices.login); //  로그인
 app.post("/posts", postServices.createPosts); //  글 작성
 app.get("/posts", postServices.getPost); // 글 목록
 
+
+
 const server = http.createServer(app);
 
-const serverPort = 8000;
+// const serverPort = 8000;
 
 const start = async () => {
   try {
-    server.listen(serverPort, () =>
-      console.log(`Server is listening on ${serverPort}`)
+    server.listen(process.env.TYPEORM_SERVERPORT, () =>
+      console.log(`Server is listening on `, process.env.TYPEORM_SERVERPORT)
     );
   } catch (err) {
     console.error(err);
   }
 };
 
+
 AppDataSource.initialize().then(() => {
+
   console.log("Data Source has been initialized!");
 });
+
+postServices.AppDataSource.initialize().then(() => {
+  console.log("Post Source has been initialized!")
+});
+
 
 start();
 
