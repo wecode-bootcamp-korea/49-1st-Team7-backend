@@ -13,8 +13,8 @@ app.use(cors());
 app.use(morgan("combined"));
 app.use(express.json());
 
-const userServices = require("./services/userServices");
-const postServices = require("./services/postServices");
+const userServices = require("./services/userServices_test_token");
+const postServices = require("./services/postServices_test_token");
 
 const AppDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,

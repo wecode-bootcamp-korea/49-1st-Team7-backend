@@ -14,6 +14,7 @@ app.use(morgan("combined"));
 app.use(express.json());
 
 const userServices = require("./services/userServices");
+const postServices = require("./services/postServices");
 
 const AppDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
@@ -24,26 +25,15 @@ const AppDataSource = new DataSource({
   database: process.env.TYPEORM_DATABASE,
 });
 
-// const AppDataSource = new DataSource({
-//   type: "mysql",
-//   host: "localhost",
-//   port: "3306",
-//   username: "root",
-//   password: "pw",
-//   //   database: "minitest",
-//   database: "project_1",
-// });
+const { errorHandler } = require("./errorHandler.js");
 
 // 실행
 app.get("/", userServices.welcome); // 메인홈
 app.get("/users", userServices.getUsers); // 유저데이터 화면
 app.post("/users", userServices.createUsers); // 회원가입
-app.post("/login", userServices.login); //  로그인 - ing
-
-// const test = AppDataSource.initialize()
-//     .then(() => {
-//         console.log("Data Source has been initialized!")
-//     })
+app.post("/login", userServices.login); //  로그인
+app.post("/posts", postServices.createPosts); //  글 작성
+app.get("/posts", postServices.getPost); // 글 목록
 
 const server = http.createServer(app);
 

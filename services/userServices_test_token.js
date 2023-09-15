@@ -86,11 +86,11 @@ const createUsers = async (req, res) => {
     VALUES("${nickname}", "${email}", "${hashedPassword}")
     `);
 
-    console.log("user data:", userData[0]);
+    console.log("user data:", userData);
 
     return res.status(201).json({
       message: `${nickname}(${email}) user create complete`,
-      data: userData[0],
+      data: userData,
     });
   } catch (err) {
     console.log(err);
@@ -145,12 +145,17 @@ const login = async (req, res) => {
     //   throw error;
     // }
 
-    const loginToken = jwt.sign({ id: userEmailCheck[0].id }, "loginToken");
+    const payLoad = {
+      id: userEmailCheck[0].id,
+      email: userEmailCheck[0].email,
+      nickname: userEmailCheck[0].nickname,
+    };
+
+    const loginToken = jwt.sign(payLoad, process.env.SECRETKEY);
 
     return res.status(200).json({
       message: "login complete",
       token: loginToken,
-      nickname: userEmailCheck[0].nickname,
     });
   } catch (err) {
     console.log(err);
